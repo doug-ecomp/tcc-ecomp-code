@@ -1,12 +1,18 @@
 from Node import Node
 from List import List
+from Queue import Queue
 
-lista = List()
-lista.addNode(3, 'd', 0)
-lista.addNode(0, 'a', 0)
-lista.addNode(1, 'b', 1)
-lista.addNode(2, 'c', -1)
+lista = Queue()
+lista.add(3, 'd')
+lista.add(0, 'a')
+lista.add(1, 'b')
+lista.add(2, 'c')
+lista.remove()
 print(lista.getListItens())
-lista.removeNode(-1)
+lista.remove()
+print(lista.getListItens())
+lista.remove()
+print(lista.getListItens())
+quit()
 print(lista.getListItens())
 print(lista.getNode(0))

@@ -6,17 +6,17 @@ class List:
         self.first = None
         self.last = None
 
-
-    def getsize (self):
+    
+    def getSize (self):
         return self.size
 
-    def getfirst (self):
+    def getFirst (self):
         return self.first
 
-    def getlast (self):
+    def getLast (self):
         return self.last
     
-    def addNode(self, id, value, index = -1):
+    def add(self, id, value, index = -1):
         node = Node(id, value)
         if self.size == 0: #lista vazia
             self.first = node
@@ -39,7 +39,7 @@ class List:
                     
         self.size += 1
 
-    def removeNode(self, index = -1):
+    def remove(self, index = -1):
         if self.size == 0: return
         elif self.size == 1:
             self.fitst = None
