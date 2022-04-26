@@ -26,6 +26,9 @@ class Node:
     def getRight(self):
         return self.right
 
+    def setValue(self, value):
+        self.value = value
+    
     def setNext(self, next):
         self.next = next
 
