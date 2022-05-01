@@ -14,7 +14,7 @@ def getCounter(counterQueue, queueLimit):
         if counter.getSize() == 0:
             return idx
         elif counter.getSize() < queueLimit:
-            if (queue is None) or (queue is not None and counter.getFirst().getValue() < counterQueue[queue].getFirst().getValue()):
+            if (queue is None) or (queue is not None and counter.getSize() < counterQueue[queue].getSize()):
                 queue = idx
     
     return queue
@@ -28,71 +28,66 @@ def amountInLine(counterQueue):
 
 
 start_time = time()
+
 #constants
-totalClients = [10, 15, 25, 50, 400]
+clientBlocks = [10, 15, 25, 50, 400]
 maxCapacity = 40
 counterAmount = 5
 multipleQueue = True
 
 #variables
-
 timer = 0
-nextBlockTimer = 10
-clientToBeServed = 0
-order = 0
+nextBlockTimer = 10 #Interval between blocks f clients
+order = 0 #Holds the number of passwords distributed 
+totalClients = 0 #Number of clients currently in the bank
 counterQueue = []
-clientQueue = Queue()
-excessQueue = Queue()
+clientQueue = Queue() #all clients go through this queue before go to a counter
 queueLimit = 1 if not multipleQueue else maxCapacity // counterAmount
-#create queues
+
+#create counters' queues
 for n in range(counterAmount):
     counterQueue.append(Queue())
 
-for iBlock, blockSize in enumerate(totalClients):
+for iBlock, blockSize in enumerate(clientBlocks):
     #fill client queue
     print(f"New block of clients: {iBlock}")
     for n in range(order, order+blockSize):
-        if clientQueue.getSize() + amountInLine(counterQueue) < maxCapacity:
-            clientQueue.add(n, randint(1,10))
-        else:
-            excessQueue.add(n, randint(1,10))
+        #each client has a service time
+        clientQueue.add(n, randint(1,10))
     
     order += blockSize
+    totalClients += blockSize
 
     print(f'Awating List: {clientQueue.getListItens()}')
-    print(f'Excess List: {excessQueue.getListItens()}')
-    clientsBeingServed = 1
-    nextBlock = False    
-    while(clientsBeingServed > 0 and not nextBlock):
-        if clientQueue.getSize()>0 or excessQueue.getSize() > 0:
+    nextBlock = False #aux variable to indicate when accept new block of clients   
+    while(totalClients > 0 and not nextBlock):
+        #get a counter queue with spot available
+        idx = getCounter(counterQueue, queueLimit) 
+        while idx is not None and clientQueue.getSize()>0:
+            #add client to counter's queue and remove from client's queue
+            counterQueue[idx].add(clientQueue.getFirst().getId(), clientQueue.getFirst().getValue())
+            clientQueue.remove()
             idx = getCounter(counterQueue, queueLimit)
-            while idx is not None:
-                auxCounter = clientQueue if clientQueue.getSize()>0 else excessQueue
-                counterQueue[idx].add(auxCounter.getFirst().getId(), auxCounter.getFirst().getValue())
-                auxCounter.remove()
-                if (amountInLine(counterQueue) + clientQueue.getSize()) < maxCapacity:
-                    clientQueue.add(excessQueue.getFirst().getId(), excessQueue.getFirst().getValue())
-                    excessQueue.remove()
-                idx = getCounter(counterQueue, queueLimit)
 
         sleep(0.01)
         timer += 1
         print(f'-----------Timer:{timer}-----------')
         print(f'Awating List: {clientQueue.getSize()}')
-        print(f'Excess List: {excessQueue.getSize()}')
-        print(f'Being Served: {amountInLine(counterQueue)}')
+        print(f'Total Clients: {totalClients}')
+        #decrement the service time for the clients at the counter and remove those who the service time has been compĺeted
         for idx, counter in enumerate(counterQueue):
+            print(f"Counter {idx}: {counter.getListItens()}")
             if counter.getSize() > 0:
                 counter.getFirst().setValue(counter.getFirst().getValue()-1)
                 if counter.getFirst().getValue() == 0:
                     counter.remove()
-            print(f"Counter {idx}: {counter.getListItens()}")
+                    totalClients -= 1
         
-        if (iBlock + 1)<len(totalClients):
+
+        #At multiples of nextBlockTimer, set the flag to get next client block. Do it only when the loop is not already at the last iteration
+        if (iBlock + 1)<len(clientBlocks):
             if timer % nextBlockTimer == 0: 
                 nextBlock = True
-        else:
-            clientsBeingServed = amountInLine(counterQueue)
 
 end_time = time()
 tt_time = end_time - start_time
