@@ -42,7 +42,16 @@ order = 0 #Holds the number of passwords distributed
 totalClients = 0 #Number of clients currently in the bank
 counterQueue = []
 clientQueue = Queue() #all clients go through this queue before go to a counter
-queueLimit = 1 if not multipleQueue else maxCapacity // counterAmount
+
+simulatioType = input("""
+Escolha o tipo de simulação
+0 - Fila simples
+1 - Múltiplas filas
+""")
+if simulatioType == '0':
+    queueLimit = 1
+else:
+    queueLimit = maxCapacity // counterAmount
 
 #create counters' queues
 for n in range(counterAmount):
