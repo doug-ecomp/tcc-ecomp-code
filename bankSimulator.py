@@ -44,13 +44,15 @@ counterQueue = []
 clientQueue = Queue() #all clients go through this queue before go to a counter
 
 simulatioType = input("""
-Escolha o tipo de simulação
-0 - Fila simples
-1 - Múltiplas filas
+Select the simulation type:
+0 - Single Line
+1 - Multiple Queues
 """)
 if simulatioType == '0':
+    simulation_type_text = 'Single Line'
     queueLimit = 1
 else:
+    simulation_type_text = 'Multiple Queues'
     queueLimit = maxCapacity // counterAmount
 
 #create counters' queues
@@ -71,17 +73,18 @@ for iBlock, blockSize in enumerate(clientBlocks):
     nextBlock = False #aux variable to indicate when accept new block of clients   
     while(totalClients > 0 and not nextBlock):
         #get a counter queue with spot available
-        idx = getCounter(counterQueue, queueLimit) 
-        while idx is not None and clientQueue.getSize()>0:
+        while clientQueue.getSize()>0:
+            idx = getCounter(counterQueue, queueLimit)
+            if idx is None:
+                break # there is no spot available in any of the queues
             #add client to counter's queue and remove from client's queue
             counterQueue[idx].add(clientQueue.getFirst().getId(), clientQueue.getFirst().getValue())
             clientQueue.remove()
-            idx = getCounter(counterQueue, queueLimit)
 
         sleep(0.01)
         timer += 1
         print(f'-----------Timer:{timer}-----------')
-        print(f'Awating List: {clientQueue.getSize()}')
+        print(f'Awating List Size: {clientQueue.getSize()}')
         print(f'Total Clients: {totalClients}')
         #decrement the service time for the clients at the counter and remove those who the service time has been compĺeted
         for idx, counter in enumerate(counterQueue):
@@ -91,13 +94,19 @@ for iBlock, blockSize in enumerate(clientBlocks):
                 if counter.getFirst().getValue() == 0:
                     counter.remove()
                     totalClients -= 1
-        
 
         #At multiples of nextBlockTimer, set the flag to get next client block. Do it only when the loop is not already at the last iteration
         if (iBlock + 1)<len(clientBlocks):
+            if totalClients == 0: # All current costumers may get served before next group of clients arrives
+                for x in range(nextBlockTimer - (timer % nextBlockTimer), 0, -1):
+                    print(f'No clients at the bank. Time remaining to next group\'s arrival: {x}')
+                    sleep(0.01)
+                    timer += 1
+                    print(f'-----------Timer:{timer}-----------')
+
             if timer % nextBlockTimer == 0: 
                 nextBlock = True
 
 end_time = time()
 tt_time = end_time - start_time
-print(tt_time)
+print(f'The simulation time with {simulation_type_text} was {tt_time} ({timer} iterations)')
