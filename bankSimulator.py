@@ -37,11 +37,11 @@ CLIENT_BLOCKS = [10, 15, 25, 50, 400]
 MAX_CAPACITY = 40
 COUNTER_AMOUNT = 5
 MULTIPLE_QUEUE = True
+CLIENT_BLOCK_INTERVAL = 10 #Interval between blocks of clients
 DEBUG = True
 
 #variables
 timer = 0
-nextBlockTimer = 10 #Interval between blocks of clients
 order = 0 #Holds the number of passwords distributed 
 totalClients = 0 #Number of clients currently in the bank
 counterQueue = []
@@ -102,13 +102,13 @@ for iBlock, blockSize in enumerate(CLIENT_BLOCKS):
         #At multiples of nextBlockTimer, set the flag to get next client block. Do it only when the loop is not already at the last iteration
         if (iBlock + 1)<len(CLIENT_BLOCKS):
             if totalClients == 0: # All current costumers may get served before next group of clients arrives
-                for x in range(nextBlockTimer - (timer % nextBlockTimer), 0, -1):
+                for x in range(CLIENT_BLOCK_INTERVAL - (timer % CLIENT_BLOCK_INTERVAL), 0, -1):
                     log(f'No clients at the bank. Time remaining to next group\'s arrival: {x}')
                     sleep(0.01)
                     timer += 1
                     log(f'-----------Timer:{timer}-----------')
 
-            if timer % nextBlockTimer == 0: 
+            if timer % CLIENT_BLOCK_INTERVAL == 0: 
                 nextBlock = True
 
 end_time = time()
